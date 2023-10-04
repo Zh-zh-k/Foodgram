@@ -60,7 +60,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class Follow(models.Model):
+class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

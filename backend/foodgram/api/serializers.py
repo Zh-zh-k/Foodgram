@@ -1,7 +1,8 @@
 import base64
 import webcolors
 from rest_framework import serializers
-from recipes.models import Recipe, Tag
+from rest_framework.validators import UniqueTogetherValidator
+from recipes.models import Recipe, Tag, User, Subscribe
 from django.core.files.base import ContentFile
 
 
@@ -50,3 +51,25 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'description',
                   'image'
         )
+
+
+class SubscribeSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+        default=serializers.CurrentUserDefault()
+    )
+    author = serializers.SlugRelatedField(slug_field='username',
+                                          queryset=User.objects.all(),)
+
+    def validate_subscription(self, author):
+        if author == self.context['request'].user:
+            raise serializers.ValidationError('Нельзя подписаться на самого'
+                                              'себя')
+        return author
+
+    class Meta:
+        fields = ('id', 'user', 'author')
+        model = Subscribe
+        validators = [UniqueTogetherValidator(queryset=Subscribe.objects.all(),
+                                              fields=['user', 'author'])]
