@@ -19,10 +19,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('recipes.urls', namespace='recipes')),
+    path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
-    path('auth/', include('users.urls', namespace='users')),
-    path('auth/', include('django.contrib.auth.urls')),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.jwt')),
 ]
 
 if settings.DEBUG:

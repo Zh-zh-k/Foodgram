@@ -1,33 +1,24 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils.html import format_html
 
 User = get_user_model()
 
 TAG_CHOICES = (
-    ("Breakfast", "Завтрак"),
-    ("Lunch", "Обед"),
-    ("Dinner", "Ужин"),
+    ('Breakfast', 'Завтрак'),
+    ('Lunch', 'Обед'),
+    ('Dinner', 'Ужин'),
 )
 
 
 class Tag(models.Model):
-    title = models.CharField(max_length=15,
-                             choices=TAG_CHOICES)
+    title = models.CharField(max_length=15)
     slug = models.SlugField(unique=True)
     color = models.CharField(max_length=7,
-                             default="#ffffff",
                              unique=True)
 
     def __str__(self):
 
         return self.title
-
-    def colored_name(self):
-        return format_html(
-            '<span style="color: #{};">{}</span>',
-            self.color,
-        )
 
 
 class Recipe(models.Model):
@@ -43,8 +34,8 @@ class Recipe(models.Model):
     )
     tag = models.ManyToManyField(
         Tag,
-        related_name='recipes',
-        verbose_name='Тэг'
+        through='RecipeTag',
+        choices=TAG_CHOICES
     )
     time = models.DurationField(
         verbose_name='Время приготовления'
@@ -57,7 +48,7 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         'Картинка',
-        upload_to='recipes/'
+        upload_to='recipes/images/',
     )
 
     class Meta:
@@ -86,3 +77,11 @@ class Follow(models.Model):
             models.UniqueConstraint(fields=['user', 'author'],
                                     name='unique_follower_following')
         ]
+
+
+class RecipeTag(models.Model):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.tag} {self.recipe}'
