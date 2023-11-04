@@ -2,7 +2,8 @@ import base64
 import webcolors
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from recipes.models import Recipe, Tag, User, Subscribe
+from recipes.models import Recipe, Tag, Ingredient
+from users.models import User, Subscribe
 from django.core.files.base import ContentFile
 
 
@@ -32,7 +33,14 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('title', 'slug', 'color')
+        fields = ('id', 'title', 'slug', 'color')
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'title', 'measurement_unit')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -42,6 +50,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
+                  'id',
                   'name',
                   'pub_date',
                   'author',
