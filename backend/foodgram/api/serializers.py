@@ -1,10 +1,11 @@
 import base64
+
 import webcolors
+from django.core.files.base import ContentFile
+from recipes.models import Ingredient, Recipe, Tag
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from recipes.models import Recipe, Tag, Ingredient
-from users.models import User, Subscribe
-from django.core.files.base import ContentFile
+from users.models import Subscribe, User
 
 
 class Base64ImageField(serializers.ImageField):
