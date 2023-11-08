@@ -11,8 +11,12 @@ TAG_CHOICES = (
 )
 
 
-class Tag(models.Model):
-    title = models.CharField(max_length=15, unique=True)
+class Tag(models.TextChoices):
+    BREAKFAST = "Завтрак"
+    LUNCH = "Обед"
+    DINNER = "Ужин"
+
+    title = models.TextField(max_length=15, unique=True)
     slug = models.SlugField(unique=True)
     color = models.CharField(
         max_length=7,
@@ -48,6 +52,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
+
     name = models.TextField(
         verbose_name='Название рецепта'
     )
@@ -61,7 +66,7 @@ class Recipe(models.Model):
     tag = models.ManyToManyField(
         Tag,
         through='RecipeTag',
-        choices=TAG_CHOICES
+        choices=Tag.choices
     )
     time = models.DurationField(
         verbose_name='Время приготовления'

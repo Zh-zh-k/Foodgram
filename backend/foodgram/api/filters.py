@@ -1,15 +1,18 @@
 from django_filters import FilterSet
 from django_filters.rest_framework import filters
+
 from recipes.models import Recipe, Tag
 
 
 class RecipeCustomFilter(FilterSet):
-    tags = filters.MultipleChoiceFilter(field_name='tags__slug',
-                                        to_field_name='slug',
-                                        queryset=Tag.objects.all())
+    tags = filters.MultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all()
+    )
     is_favorited = filters.BooleanFilter(method='get_is_favorite')
     is_in_shopping_cart = filters.BooleanFilter(
-        method="get_is_in_shopping_cart"
+        method='get_is_in_shopping_cart'
     )
 
     class Meta:

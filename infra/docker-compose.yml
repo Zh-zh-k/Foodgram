@@ -38,3 +38,5 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_vol:/var/html/static/
       - media_vol:/var/html/media/
+    depends_on:
+      - backend
