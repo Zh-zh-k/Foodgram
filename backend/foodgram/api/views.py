@@ -1,4 +1,3 @@
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,8 +7,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
-                            Shopping, Tag)
+from . import services
+from recipes.models import (Favourite, Ingredient, Recipe, Shopping, Tag)
 from .filters import RecipeCustomFilter
 from .permissions import AdminOnly, AuthorOrReadOnly
 from .serializers import IngredientSerializer, RecipeSerializer, TagSerializer
@@ -58,7 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post'],
             permission_classes=[IsAuthenticated, ]
             )
     def favorite(self, request, pk):
@@ -66,11 +65,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             return self.add(request, Favourite, pk)
 
+    @favorite.mapping.delete
+    def delete_from_fav(self, request, pk):
+
         if request.method == 'DELETE':
             return self.delete(request, Favourite, pk)
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post'],
             permission_classes=[IsAuthenticated, ]
             )
     def shopping_cart(self, request, pk):
@@ -78,40 +80,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             return self.add(request, Shopping, pk)
 
+    @shopping_cart.mapping.delete
+    def delete_from_shopping_cart(self, request, pk):
+
         if request.method == 'DELETE':
             return self.delete(request, Shopping, pk)
-
-    def create_shopping_list(self, request):
-        user = request.user
-        if not Shopping.objects.filter(user=user).exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        ingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(
-            total_amount=Sum('amount')
-        ).values_list(
-            'total_amount',
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        )
-        file_content = []
-        for ingredient in ingredients:
-            file_content += '\n'.join([
-                f'- {ingredient["ingredient__name"]} '
-                f'({ingredient["ingredient__measurement_unit"]})'
-                f' - {ingredient["amount"]}'
-            ])
-        return file_content
 
     @action(detail=False,
             methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
-        file_content = self.create_shopping_list()
+        file_content = services.get_shopping_list(user)
         file = f'{user.username}_shopping_list.txt'
         response = HttpResponse(file_content, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={file}'
